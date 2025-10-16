@@ -4,7 +4,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
-const API_URL = "http://192.168.0.172:8000/workers/login";
+const API_URL = "http://192.168.1.15:8000/workers/login";
 
 export default function LoginScreen() {
   const [phone, setPhone] = useState("");

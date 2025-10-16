@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from "react-native";
+import { View, Text,Button, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -22,8 +22,9 @@ const WorkerWallet = () => {
   const [balanceData, setBalanceData] = useState<BalanceResponse | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refresh, setRefresh] = useState(false);
 
-  const API_BASE = "http://192.168.0.172:8000/api/worker";
+  const API_BASE = "http://192.168.1.15:8000/api/worker";
 
   const fetchBalance = async () => {
     try {
@@ -43,7 +44,7 @@ const WorkerWallet = () => {
       const res = await axios.get(`${API_BASE}/wallet/transactions`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setTransactions(res.data);
+      setTransactions([...res.data].reverse());
     } catch (err) {
       console.error("Error fetching transactions:", err);
     }
@@ -71,7 +72,7 @@ const WorkerWallet = () => {
       await fetchTransactions();
       setLoading(false);
     })();
-  }, []);
+  },[refresh]);
 
   if (loading) {
     return (
@@ -96,6 +97,12 @@ const WorkerWallet = () => {
           </Text>
         </View>
       )}
+
+      <Button
+  title="🔄 Refresh"
+  onPress={() => setRefresh((prev) => !prev)} // toggle state
+  color="#007AFF"
+/>
 
       <TouchableOpacity style={styles.topUpBtn} onPress={handleTopUp}>
         <Text style={styles.topUpText}>➕ Add ₹200</Text>
