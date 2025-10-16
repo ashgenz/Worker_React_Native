@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";  // 👈 import hook
+
+// import dotenv from "dotenv";
+
 interface Service {
   _id: string;
   WorkName: string;
@@ -36,15 +39,53 @@ interface Booking {
   MonthlyOrOneTime: string;
   services?: Service[];
   EstimatedPrice: number;
+
+  // 🔹 Add this
+  payment?: {
+    method: "to_app" | "to_worker";
+    status: "pending" | "completed";
+    commission: {
+      amount: number;
+      isSettled: boolean;
+      settledAt?: string;
+    };
+  };
 }
 
+// const ROUTERIPALLBACKEND = process.env.ROUTERIPALLBACKEND || "192.168.0.169" ;
+// const PORTBOOKINGS = process.env.PORTBOOKINGS || 5000 ;
+// const ROUTERIPALLBACKEND ="192.168.0.169" ;
+// const PORTBOOKINGS =5000 ;
+
+
+import Constants from "expo-constants";
+const { BASE_URL, ROUTERIPALLBACKEND, PORTBOOKINGS } = Constants.expoConfig?.extra || {};
+
+// use BASE_URL for axios calls
 
 const WorkerAcceptedBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
   // Replace with your backend API URL
-  const API_URL = "http://192.168.0.172:5000/api/worker/bookings/accepted"; 
+  const API_URL = `http://192.168.1.15:5000/api/worker/bookings/accepted`; 
+
+  const payCommission = async (bookingId: string) => {
+  try {
+    const token = await AsyncStorage.getItem("workerToken");
+    await axios.post(
+      `http://192.168.1.15:5000/api/worker/bookings/${bookingId}/pay-commission`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    alert("✅ Commission paid successfully");
+    fetchBookings(); // refresh bookings after payment
+  } catch (err) {
+    alert("❌ Failed to pay commission");
+    console.error(err);
+  }
+};
+
 const fetchBookings = async () => {
       try {
         const token =await AsyncStorage.getItem("workerToken"); // get this from async storage / context
@@ -58,12 +99,30 @@ const fetchBookings = async () => {
         setLoading(false);
       }
     };
-  useEffect(() => {
-    if (isFocused) {
-      fetchBookings(); // 👈 refresh data when tab is focused
-    }
-    
-  });
+// const fetchBookings = async () => {
+//   try {
+//     const token = await AsyncStorage.getItem("workerToken");
+//     console.log("workerToken:", token);
+//     if (!token) {
+//       // alert("Error", "No token found, please login again.");
+//       setLoading(false);
+//       return;
+//     }
+//     const res = await axios.get(`http://192.168.1.15:5000/api/worker/bookings/open`, {
+//       headers: { Authorization: `Bearer ${token}` },
+//     });
+//     setBookings(res.data);
+//     setLoading(false);
+//   } catch (err: any) {
+//     console.error("Error fetching bookings:", err?.response?.status, err?.response?.data || err.message);
+//     setLoading(false);
+//   }
+// };
+useEffect(() => {
+  fetchBookings();
+  const interval = setInterval(fetchBookings, 5000);
+  return () => clearInterval(interval);
+}, []); // run once
 
   if (loading) {
     return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: "center" }} />;
@@ -90,6 +149,20 @@ renderItem={({ item }) => (
     <Text>📞 Customer Phone: {item.TempPhoneCustomer}</Text>
     <Text>📝 Plan: {item.MonthlyOrOneTime} | {item.WhichPlan}</Text>
     <Text>💰 Price: ₹{item.EstimatedPrice}</Text>
+<Text>💳 Payment: {item.payment?.status || "pending"} ({item.payment?.method})</Text>
+<Text>⚖️ Commission: ₹{item.payment?.commission?.amount || 0}</Text>
+
+{item.payment?.commission?.isSettled ? (
+  <Text style={{ color: "green" }}>✅ Commission Settled</Text>
+) : (
+  <TouchableOpacity
+    style={styles.payBtn}
+    onPress={() => payCommission(item._id)}
+  >
+    <Text style={styles.payBtnText}>Pay Commission</Text>
+  </TouchableOpacity>
+)}
+
     {/* Services Section */}
     {item.services && item.services.length > 0 && (
       <View style={{ marginTop: 10 }}>
@@ -116,6 +189,7 @@ renderItem={({ item }) => (
         ))}
       </View>
     )}
+    
   </View>
 )}
 
@@ -151,6 +225,15 @@ serviceDetail: { fontSize: 13, color: "#555", marginLeft: 4 },
   heading: { fontSize: 20, fontWeight: "bold", marginBottom: 12 },
   card: { padding: 12, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, marginBottom: 10 },
   title: { fontSize: 16, fontWeight: "bold" },
+  payBtn: {
+  marginTop: 20,
+  padding: 12,
+  backgroundColor: "#e53935",
+  borderRadius: 8,
+  alignItems: "center",
+},
+payBtnText: { color: "#fff", fontWeight: "bold" },
+
 });
 
 export default WorkerAcceptedBookings;

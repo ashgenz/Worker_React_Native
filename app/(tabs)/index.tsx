@@ -12,7 +12,7 @@ import {
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BASE_URL = "http://192.168.0.172:5000/api/worker/bookings"; // ✅ Correct route
+const BASE_URL = "http://192.168.1.15:5000/api/worker/bookings"; // ✅ Correct route
 
 interface Service {
   _id: string;
@@ -66,7 +66,7 @@ const fetchBookings = async () => {
         Alert.alert("Error", "No token found, please login again.");
         return;
       }
-      console.log("Token:", token);
+      // console.log("Token:", token);
       const res = await axios.get(`${BASE_URL}/open`, {
         headers: { Authorization: `Bearer ${token}` },
       });
