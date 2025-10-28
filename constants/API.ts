@@ -1,48 +1,43 @@
-// constants/API.ts
-
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
+// --- CONFIGURATION: Centralize Ports and Paths ---
+export const API_PORT = 8000;         // Used for Login and Balance
+export const BOOKINGS_PORT = 5000;    // Used for Open/Accepted Bookings
+export const WORKER_API_PATH = "/api/worker";
+export const LOGIN_API_PATH = "/workers/login";
+// ---------------------
+
 const getApiHost = (): string => {
-  // Check if we are in development mode
   if (__DEV__) {
-    
-    // --- 1. Expo Manifest (Best for LAN/Physical Devices) ---
     const manifest = Constants.manifest;
+    
+    // 1. Get IP from Expo Manifest (LAN/Physical Devices)
     if (manifest?.debuggerHost) {
-      // debuggerHost is in the format '192.168.1.79:8081'. We extract ONLY the IP.
       const ipAddress = manifest.debuggerHost.split(':')[0];
-      console.log(`Using Expo Manifest IP: ${ipAddress}`);
-      return ipAddress; // Return only the IP address
+      return ipAddress; 
     } 
     
-    // --- 2. Emulator/Simulator Specific IPs (Fallback/Alternative) ---
+    // 2. Emulator/Simulator Specific IPs (Fallback)
     if (Platform.OS === 'android') {
-      // Android Emulator IP (always points to your host machine)
-      console.log("Using Android Emulator IP: 10.0.2.2");
-      return '10.0.2.2';
+      return '10.0.2.2'; // Android Emulator
     } else if (Platform.OS === 'ios') {
-      // iOS Simulator IP (always points to your host machine)
-      console.log("Using iOS Simulator IP: localhost");
-      return 'localhost';
+      return 'localhost'; // iOS Simulator
     }
     
-    // Fallback if the above checks fail in development
-    console.warn("Could not determine API host. Falling back to localhost.");
-    return 'localhost';
+    // Fallback IP
+    return '127.0.0.1';
   } 
   
-  // --- 3. Production Hostname ---
-  // This MUST be your live server's public domain or static IP (no 'http://' or route here).
-  return 'api.yourproductiondomain.com';
+  // 3. Production/Standalone Build Host (MUST be your public domain)
+  return 'api.yourproductiondomain.com'; 
 };
 
-/**
- * The base hostname (IP address or domain) for API calls.
- * Other files must append the protocol, port, and route (e.g., `http://${API_HOST}:8000/api/worker`).
- */
-export const API_BASE = getApiHost(); 
+export const API_HOST = getApiHost(); 
 
-// Export the port/route info separately so it can be used with API_HOST
-export const BACKEND_PORT = 8000;
-export const API_ROUTE_PATH = "/api/worker";
+// --- Convenience function to build URLs ---
+export const buildUrl = (port: number, path: string) => {
+    // Determine protocol (use http for local dev, or https for public production domain)
+    const protocol = API_HOST.includes('.') && API_HOST !== '10.0.2.2' ? 'http' : 'http';
+    return `${protocol}://${API_HOST}:${port}${path}`;
+}

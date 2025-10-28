@@ -63,22 +63,27 @@ const { BASE_URL, ROUTERIPALLBACKEND, PORTBOOKINGS } = Constants.expoConfig?.ext
 
 // use BASE_URL for axios calls
 
+import { BOOKINGS_PORT, WORKER_API_PATH, buildUrl } from '../../constants/API'; 
 
-import { API_BASE } from '../../constants/API';
+// NOTE: You were attempting to use Constants.expoConfig?.extra, but this is less reliable 
+// for local development than the debuggerHost approach, so we will remove those lines.
 
+// 🆕 Construct the base URL for booking operations
+const COMMISSION_PAYMENT_BASE = buildUrl(BOOKINGS_PORT, `${WORKER_API_PATH}/bookings`);
+const API_URL = `${COMMISSION_PAYMENT_BASE}/accepted`; // Used inside fetchBookings
 const WorkerAcceptedBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
   // Replace with your backend API URL
-  const API_URL = `http://${API_BASE}:5000/api/worker/bookings/all`;
+  // const API_URL = `http://${API_BASE}:5000/api/worker/bookings/all`;
 
 
   const payCommission = async (bookingId: string) => {
   try {
     const token = await AsyncStorage.getItem("workerToken");
     await axios.post(
-      `http://${API_BASE}:5000/api/worker/bookings/${bookingId}/pay-commission`,
+      `${COMMISSION_PAYMENT_BASE}/${bookingId}/pay-commission`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );

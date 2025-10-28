@@ -20,9 +20,11 @@ interface BalanceResponse {
 
 
 
+// 🆕 Import dynamic logic
+import { API_PORT, WORKER_API_PATH, buildUrl } from '../../constants/API';
 
-import { API_BASE } from "@/constants/API";
-
+// 🆕 Replace hardcoded URL
+const API_BASE = buildUrl(API_PORT, WORKER_API_PATH);
 const WorkerWallet = () => {
   const [balanceData, setBalanceData] = useState<BalanceResponse | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);

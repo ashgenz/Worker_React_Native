@@ -11,10 +11,13 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE } from '../../constants/API';
+// 🆕 Import dynamic logic
+import { BOOKINGS_PORT, WORKER_API_PATH, buildUrl } from '../../constants/API';
 
+// 🆕 Replace hardcoded URL
+const BASE_URL = buildUrl(BOOKINGS_PORT, `${WORKER_API_PATH}/bookings`);
 
-const BASE_URL = `http://${API_BASE}:5000/api/worker/bookings`; // ✅ Correct route
+// const BASE_URL = `http://${API_BASE}:5000/api/worker/bookings`; // ✅ Correct route
 
 interface Service {
   _id: string;
