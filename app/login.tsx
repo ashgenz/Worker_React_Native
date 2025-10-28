@@ -3,8 +3,10 @@ import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from "reac
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
+import { API_BASE } from '../constants/API';
 
-const API_URL = "http://192.168.1.15:8000/workers/login";
+
+const API_URL = `http://${API_BASE}:8000/workers/login`;
 
 export default function LoginScreen() {
   const [phone, setPhone] = useState("");

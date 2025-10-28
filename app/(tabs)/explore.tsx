@@ -63,18 +63,22 @@ const { BASE_URL, ROUTERIPALLBACKEND, PORTBOOKINGS } = Constants.expoConfig?.ext
 
 // use BASE_URL for axios calls
 
+
+import { API_BASE } from '../../constants/API';
+
 const WorkerAcceptedBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
   // Replace with your backend API URL
-  const API_URL = `http://192.168.1.15:5000/api/worker/bookings/accepted`; 
+  const API_URL = `http://${API_BASE}:5000/api/worker/bookings/all`;
+
 
   const payCommission = async (bookingId: string) => {
   try {
     const token = await AsyncStorage.getItem("workerToken");
     await axios.post(
-      `http://192.168.1.15:5000/api/worker/bookings/${bookingId}/pay-commission`,
+      `http://${API_BASE}:5000/api/worker/bookings/${bookingId}/pay-commission`,
       {},
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -138,30 +142,57 @@ useEffect(() => {
           data={bookings}
           keyExtractor={(item) => item._id}
 renderItem={({ item }) => (
-  <View style={styles.card}>
+  <View
+    style={[
+      styles.card,
+      item.status === "cancelled" && { backgroundColor: "#ffeaea", borderColor: "#ff7777" },
+    ]}
+  >
+    {/* Header */}
     <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
       <Text style={styles.title}>{item.WorkName}</Text>
+
+      {/* Status Badge */}
+      <View
+        style={[
+          styles.badge,
+          {
+            backgroundColor:
+              item.status === "cancelled"
+                ? "#e53935"
+                : item.status === "accepted"
+                ? "#4caf50"
+                : "#ff9800",
+          },
+        ]}
+      >
+        <Text style={styles.badgeText}>{item.status.toUpperCase()}</Text>
+      </View>
     </View>
 
+    {/* Booking Details */}
     <Text>📍 Address: {item.address}</Text>
     <Text>📅 {new Date(item.Date).toLocaleDateString()}</Text>
     <Text>👤 Customer ID: {item.IdCustomer}</Text>
     <Text>📞 Customer Phone: {item.TempPhoneCustomer}</Text>
     <Text>📝 Plan: {item.MonthlyOrOneTime} | {item.WhichPlan}</Text>
     <Text>💰 Price: ₹{item.EstimatedPrice}</Text>
-<Text>💳 Payment: {item.payment?.status || "pending"} ({item.payment?.method})</Text>
-<Text>⚖️ Commission: ₹{item.payment?.commission?.amount || 0}</Text>
+    <Text>💳 Payment: {item.payment?.status || "pending"} ({item.payment?.method})</Text>
+    <Text>⚖️ Commission: ₹{item.payment?.commission?.amount || 0}</Text>
 
-{item.payment?.commission?.isSettled ? (
-  <Text style={{ color: "green" }}>✅ Commission Settled</Text>
-) : (
-  <TouchableOpacity
-    style={styles.payBtn}
-    onPress={() => payCommission(item._id)}
-  >
-    <Text style={styles.payBtnText}>Pay Commission</Text>
-  </TouchableOpacity>
-)}
+    {/* Commission Action */}
+    {item.status === "accepted" && !item.payment?.commission?.isSettled ? (
+      <TouchableOpacity style={styles.payBtn} onPress={() => payCommission(item._id)}>
+        <Text style={styles.payBtnText}>Pay Commission</Text>
+      </TouchableOpacity>
+    ) : item.payment?.commission?.isSettled ? (
+      <Text style={{ color: "green" }}>✅ Commission Settled</Text>
+    ) : null}
+
+    {/* Cancelled Message */}
+    {item.status === "cancelled" && (
+      <Text style={{ color: "#d32f2f", marginTop: 4 }}>❌ Cancelled by Customer</Text>
+    )}
 
     {/* Services Section */}
     {item.services && item.services.length > 0 && (
@@ -181,17 +212,13 @@ renderItem={({ item }) => (
             {srv.HallSize !== undefined && <Text style={styles.serviceDetail}>• Hall Size: {srv.HallSize}</Text>}
             {srv.FrequencyPerWeek && <Text style={styles.serviceDetail}>• {srv.FrequencyPerWeek}</Text>}
             {srv.AmountOfBartan !== undefined && <Text style={styles.serviceDetail}>• Utensils: {srv.AmountOfBartan}</Text>}
-            {srv.AmountOfBartan !== undefined && (
-  <Text style={styles.serviceDetail}>• Utensils: {srv.AmountOfBartan}</Text>
-)}
-
           </View>
         ))}
       </View>
     )}
-    
   </View>
 )}
+
 
         />
       )}

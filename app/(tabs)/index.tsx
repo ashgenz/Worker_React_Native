@@ -11,8 +11,10 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE } from '../../constants/API';
 
-const BASE_URL = "http://192.168.1.15:5000/api/worker/bookings"; // ✅ Correct route
+
+const BASE_URL = `http://${API_BASE}:5000/api/worker/bookings`; // ✅ Correct route
 
 interface Service {
   _id: string;

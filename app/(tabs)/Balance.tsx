@@ -18,18 +18,23 @@ interface BalanceResponse {
   lastUpdated: string;
 }
 
+
+
+
+import { API_BASE } from "@/constants/API";
+
 const WorkerWallet = () => {
   const [balanceData, setBalanceData] = useState<BalanceResponse | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
 
-  const API_BASE = "http://192.168.1.15:8000/api/worker";
+  const API_BASE1 = `http://${API_BASE}:8000/api/worker`;
 
   const fetchBalance = async () => {
     try {
       const token = await AsyncStorage.getItem("workerToken");
-      const res = await axios.get(`${API_BASE}/balance`, {
+      const res = await axios.get(`${API_BASE1}/balance`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBalanceData(res.data);
@@ -41,7 +46,7 @@ const WorkerWallet = () => {
   const fetchTransactions = async () => {
     try {
       const token = await AsyncStorage.getItem("workerToken");
-      const res = await axios.get(`${API_BASE}/wallet/transactions`, {
+      const res = await axios.get(`${API_BASE1}/wallet/transactions`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTransactions([...res.data].reverse());
@@ -54,7 +59,7 @@ const WorkerWallet = () => {
     try {
       const token = await AsyncStorage.getItem("workerToken");
       await axios.post(
-        `${API_BASE}/wallet/topup`,
+        `${API_BASE1}/wallet/topup`,
         { amount: 200, description: "Manual top-up" }, // 👈 dummy top-up
         { headers: { Authorization: `Bearer ${token}` } }
       );
