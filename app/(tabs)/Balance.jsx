@@ -1,37 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { View, Text,Button, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from "react-native";
+import { View, Text, Button, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-interface Transaction {
-  _id: string;
-  type: "credit" | "debit";
-  amount: number;
-  description: string;
-  date: string;
-}
-
-interface BalanceResponse {
-  workerId: string;
-  balance: number;
-  currency: string;
-  lastUpdated: string;
-}
-
-
 
 // 🆕 Import dynamic logic
 import { API_PORT, WORKER_API_PATH, buildUrl } from '../../constants/API';
 
-// 🆕 Replace hardcoded URL
-const API_BASE = buildUrl(API_PORT, WORKER_API_PATH);
 const WorkerWallet = () => {
-  const [balanceData, setBalanceData] = useState<BalanceResponse | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  // Removed <BalanceResponse | null> and <Transaction[]> types
+  const [balanceData, setBalanceData] = useState(null);
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
 
-  const API_BASE1 = `http://${API_BASE}:8000/api/worker`;
+  const API_BASE1 = `https://urbanlite-backends-pd2g.onrender.com/api/worker`;
 
   const fetchBalance = async () => {
     try {
@@ -62,7 +44,7 @@ const WorkerWallet = () => {
       const token = await AsyncStorage.getItem("workerToken");
       await axios.post(
         `${API_BASE1}/wallet/topup`,
-        { amount: 200, description: "Manual top-up" }, // 👈 dummy top-up
+        { amount: 200, description: "Manual top-up" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchBalance();
@@ -79,7 +61,7 @@ const WorkerWallet = () => {
       await fetchTransactions();
       setLoading(false);
     })();
-  },[refresh]);
+  }, [refresh]);
 
   if (loading) {
     return (
@@ -106,10 +88,10 @@ const WorkerWallet = () => {
       )}
 
       <Button
-  title="🔄 Refresh"
-  onPress={() => setRefresh((prev) => !prev)} // toggle state
-  color="#007AFF"
-/>
+        title="🔄 Refresh"
+        onPress={() => setRefresh((prev) => !prev)}
+        color="#007AFF"
+      />
 
       <TouchableOpacity style={styles.topUpBtn} onPress={handleTopUp}>
         <Text style={styles.topUpText}>➕ Add ₹200</Text>

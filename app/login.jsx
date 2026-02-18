@@ -4,11 +4,9 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { API_PORT, LOGIN_API_PATH, buildUrl } from '../constants/API'; 
-// Use the new buildUrl function
-const API_URL = buildUrl(API_PORT, LOGIN_API_PATH);
 
-
-// const API_URL = `http://${API_BASE}:8000/workers/login`;
+// URL for the worker login endpoint
+const API_URL = `https://urbanlite-backends-pd2g.onrender.com/workers/login`;
 
 export default function LoginScreen() {
   const [phone, setPhone] = useState("");
@@ -16,6 +14,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    console.log(API_URL);
     if (!phone || !password) {
       Alert.alert("Error", "Please enter both phone number and password");
       return;
@@ -32,7 +31,7 @@ export default function LoginScreen() {
       } else {
         Alert.alert("Error", "Invalid credentials");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
       if (error.response) {
         Alert.alert("Login Failed", error.response.data.error || "Invalid credentials");
@@ -61,16 +60,32 @@ export default function LoginScreen() {
         value={password}
         onChangeText={setPassword}
       />
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? "Logging in..." : "Login"}</Text>
+      <TouchableOpacity 
+        style={styles.button} 
+        onPress={handleLogin} 
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>
+          {loading ? "Logging in..." : "Login"}
+        </Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#fff" },
-  title: { fontSize: 28, fontWeight: "bold", marginBottom: 20 },
+  container: { 
+    flex: 1, 
+    justifyContent: "center", 
+    alignItems: "center", 
+    padding: 20, 
+    backgroundColor: "#fff" 
+  },
+  title: { 
+    fontSize: 28, 
+    fontWeight: "bold", 
+    marginBottom: 20 
+  },
   input: {
     width: "100%",
     padding: 12,
@@ -86,5 +101,9 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
   },
-  buttonText: { color: "white", fontWeight: "bold", fontSize: 16 },
+  buttonText: { 
+    color: "white", 
+    fontWeight: "bold", 
+    fontSize: 16 
+  },
 });

@@ -4,8 +4,11 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
+import { useEffect } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { checkForWorkerUpdates } from '@/constants/updateHandler'; // Import the handler
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -13,6 +16,18 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+      // Trigger the update check once fonts are loaded and app is ready
+      checkForWorkerUpdates(); 
+    }
+  }, [loaded]);
+
+  if (!loaded) {
+    return null;
+  }
+  
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       {!loaded ? (
